@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>..: HAFALAN SANTRI :..</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        html, body { margin: 0; padding: 0; }
+        body {
+            background: linear-gradient(135deg, #e8f0f8 0%, #f4f7fc 100%);
+            padding: 16px; color: #1e2a3a; min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .hero {
+            background: linear-gradient(135deg, #0b3d5c, #1a5a7a);
+            color: white; border-radius: 18px; padding: 28px 22px; text-align: center;
+            margin-bottom: 22px; box-shadow: 0 8px 24px rgba(11,61,92,0.2);
+        }
+        .hero h1 { margin: 0 0 6px; font-size: clamp(1.3rem, 4vw, 1.9rem); }
+        .hero p { margin: 0; opacity: 0.9; font-size: clamp(0.8rem, 2.5vw, 0.95rem); }
+
+        .tabs {
+            display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
+            margin-bottom: 18px; scrollbar-width: thin;
+        }
+        .tabs::-webkit-scrollbar { height: 5px; }
+        .tabs::-webkit-scrollbar-thumb { background: #b8cde0; border-radius: 5px; }
+        .tab-btn {
+            flex: 0 0 auto; background: #e9f0f7; border: 1px solid #b8cde0;
+            padding: 11px 20px; border-radius: 12px 12px 0 0; cursor: pointer;
+            font-weight: 600; color: #1e3b5a; font-size: 0.9rem;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .tab-btn:hover { background: #d0e0f0; }
+        .tab-btn.active {
+            background: white; color: #0b3d5c;
+            border-bottom-color: white; box-shadow: 0 -3px 8px rgba(0,0,0,0.05);
+        }
+        .tab-btn.danger { color: #b71c1c; }
+        .tab-btn.danger.active { color: #c62828; }
+        .tab-btn.sync-tab { color: #1565c0; }
+        .tab-btn.sync-tab.active { color: #0d47a1; }
+
+        .tab-panel {
+            display: none; background: white; border-radius: 0 16px 16px 16px;
+            padding: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            border: 1px solid #dde7f0;
+        }
+        .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+        .panel-header {
+            display: flex; flex-wrap: wrap; gap: 12px;
+            align-items: center; justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .panel-header h2 {
+            margin: 0; color: #0b3d5c; font-size: clamp(1rem, 3vw, 1.25rem);
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .badge {
+            background: #e9f0f7; color: #1e3b5a; padding: 3px 10px;
+            border-radius: 12px; font-size: 0.72rem; font-weight: 500;
+        }
+        .btn-add-siswa {
+            background: linear-gradient(135deg, #2e7d32, #66bb6a);
+            color: white; border: none; padding: 9px 16px;
+            border-radius: 10px; cursor: pointer; font-weight: 600;
+            font-size: 0.82rem; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+            box-shadow: 0 3px 10px rgba(46,125,50,0.25);
+        }
+        .btn-add-siswa:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(46,125,50,0.35); }
+
+        .leaderboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 14px; margin-bottom: 20px;
+        }
+        .lb-card {
+            border-radius: 14px; padding: 14px 16px; border: 1px solid;
+        }
+        .lb-card.top {
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            border-color: #a5d6a7;
+        }
+        .lb-card.bottom {
+            background: linear-gradient(135deg, #fff5f5, #ffebee);
+            border-color: #ffcdd2;
+        }
+        .lb-card h3 {
+            margin: 0 0 10px; font-size: 0.92rem;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .lb-card.top h3 { color: #1b5e20; }
+        .lb-card.bottom h3 { color: #b71c1c; }
+        .lb-card h3 .count {
+            font-size: 0.68rem; font-weight: 500;
+            background: rgba(255,255,255,0.7);
+            padding: 2px 8px; border-radius: 10px; color: inherit;
+        }
+        .lb-list { list-style: none; padding: 0; margin: 0; }
+        .lb-list li {
+            display: flex; align-items: center; gap: 10px;
+            padding: 7px 10px; border-radius: 10px;
+            background: rgba(255,255,255,0.7);
+            margin-bottom: 5px; transition: all 0.15s;
+        }
+        .lb-list li:last-child { margin-bottom: 0; }
+        .lb-list li:hover { background: white; transform: translateX(3px); }
+        .lb-rank {
+            width: 26px; height: 26px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.78rem; flex-shrink: 0; color: white;
+        }
+        .lb-card.top .lb-rank { background: linear-gradient(135deg, #2e7d32, #66bb6a); }
+        .lb-card.top .lb-rank.rank-1 {
+            background: linear-gradient(135deg, #f9a825, #ffca28); color: #4a3500;
+            box-shadow: 0 2px 8px rgba(249,168,37,0.4);
+        }
+        .lb-card.top .lb-rank.rank-2 { background: linear-gradient(135deg, #78909c, #b0bec5); color: #263238; }
+        .lb-card.top .lb-rank.rank-3 { background: linear-gradient(135deg, #a1887f, #d7ccc8); color: #3e2723; }
+        .lb-card.bottom .lb-rank { background: linear-gradient(135deg, #c62828, #ef5350); }
+        .lb-name {
+            flex: 1; font-weight: 600; font-size: 0.84rem;
+            color: #0b3d5c; white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .lb-pct {
+            font-weight: 700; font-size: 0.8rem; padding: 3px 9px;
+            border-radius: 10px; white-space: nowrap;
+        }
+        .lb-card.top .lb-pct { background: #c8e6c9; color: #1b5e20; }
+        .lb-card.bottom .lb-pct { background: #ffcdd2; color: #b71c1c; }
+        .lb-empty {
+            font-size: 0.8rem; color: #7a8fa3; font-style: italic;
+            padding: 16px 8px; text-align: center; line-height: 1.5;
+        }
+        .lb-empty .icon { font-size: 1.4rem; display: block; margin-bottom: 6px; opacity: 0.7; }
+        .lb-note {
+            font-size: 0.68rem; color: #7a8fa3;
+            margin-top: 8px; font-style: italic; line-height: 1.4;
+        }
+
+        .table-wrap {
+            overflow-x: auto; border-radius: 14px; border: 1px solid #e2eaf2;
+            -webkit-overflow-scrolling: touch;
+        }
+        table.hafalan {
+            width: 100%; border-collapse: collapse; min-width: 720px;
+            font-size: 0.86rem;
+        }
+        table.hafalan thead th {
+            background: linear-gradient(135deg, #0b3d5c, #1a5a7a);
+            color: white; padding: 12px 10px; text-align: center;
+            font-weight: 600; font-size: 0.78rem; white-space: nowrap;
+            position: sticky; top: 0; z-index: 2;
+        }
+        table.hafalan thead th:first-child { border-top-left-radius: 13px; }
+        table.hafalan thead th:last-child { border-top-right-radius: 13px; }
+        table.hafalan tbody td {
+            padding: 10px; border-bottom: 1px solid #eef3f8;
+            vertical-align: middle;
+        }
+        table.hafalan tbody tr:last-child td { border-bottom: none; }
+        table.hafalan tbody tr:nth-child(even) { background: #f8fbff; }
+        table.hafalan tbody tr:hover { background: #eef6ff; }
+        table.hafalan tbody tr.row-top { background: #f1f8e9; }
+        table.hafalan tbody tr.row-top:hover { background: #e8f5e9; }
+        table.hafalan tbody tr.row-bottom { background: #fff5f5; }
+        table.hafalan tbody tr.row-bottom:hover { background: #ffebee; }
+        td.col-no { text-align: center; color: #5a7a95; font-weight: 600; width: 48px; }
+        td.col-nama { font-weight: 600; color: #0b3d5c; white-space: nowrap; }
+        td.col-nama .tag {
+            display: inline-block; font-size: 0.62rem; font-weight: 700;
+            padding: 1px 6px; border-radius: 6px; margin-left: 5px;
+            vertical-align: middle;
+        }
+        td.col-nama .tag.top    { background: #c8e6c9; color: #1b5e20; }
+        td.col-nama .tag.bottom { background: #ffcdd2; color: #b71c1c; }
+        td.col-juz { text-align: center; }
+        td.col-aksi { text-align: center; white-space: nowrap; width: 90px; }
+
+        .icon-btn {
+            background: #e9f0f7; border: 1px solid #b8cde0;
+            width: 30px; height: 30px; border-radius: 8px;
+            cursor: pointer; font-size: 0.85rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: all 0.15s; margin: 0 2px;
+        }
+        .icon-btn:hover { background: #d0e0f0; transform: translateY(-1px); }
+        .icon-btn.danger { background: #ffebee; border-color: #ffcdd2; color: #c62828; }
+        .icon-btn.danger:hover { background: #ffcdd2; }
+
+        .pct-pill {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 56px; padding: 6px 10px; border-radius: 20px;
+            font-weight: 700; font-size: 0.78rem; cursor: pointer;
+            text-decoration: none; transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+        .pct-pill:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
+        .pct-pill.low  { background: #ffebee; color: #c62828; border-color: #ffcdd2; }
+        .pct-pill.mid  { background: #fff8e1; color: #b26a00; border-color: #ffe082; }
+        .pct-pill.high { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+        .pct-pill.none { background: #eef2f6; color: #7a8fa3; border-color: #dde7f0; }
+
+        .sync-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        .sync-card {
+            background: #f8fbff; border: 1px solid #dde7f0;
+            border-radius: 14px; padding: 18px;
+        }
+        .sync-card h3 {
+            margin: 0 0 6px; color: #0b3d5c; font-size: 1rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .sync-card p {
+            margin: 0 0 14px; color: #5a7a95; font-size: 0.82rem; line-height: 1.5;
+        }
+        .sync-card .device-box {
+            background: white; border: 1px solid #dde7f0; border-radius: 10px;
+            padding: 10px 14px; margin-bottom: 12px; font-size: 0.82rem;
+        }
+        .sync-card .device-box .lbl { color: #7a8fa3; font-size: 0.72rem; }
+        .sync-card .device-box .val { font-weight: 700; color: #0b3d5c; word-break: break-all; }
+        .sync-card input[type="text"] {
+            width: 100%; padding: 10px 12px; border-radius: 10px;
+            border: 1px solid #b8cde0; font-size: 0.86rem;
+            margin-bottom: 10px; outline: none;
+        }
+        .sync-card input[type="text"]:focus { border-color: #0b3d5c; box-shadow: 0 0 0 3px rgba(11,61,92,0.1); }
+        .btn-sync {
+            background: linear-gradient(135deg, #1565c0, #42a5f5);
+            color: white; border: none; padding: 11px 18px;
+            border-radius: 10px; cursor: pointer; font-weight: 600;
+            font-size: 0.86rem; transition: all 0.2s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; box-shadow: 0 3px 10px rgba(21,101,192,0.25);
+        }
+        .btn-sync:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(21,101,192,0.35); }
+        .btn-sync.green {
+            background: linear-gradient(135deg, #2e7d32, #66bb6a);
+            box-shadow: 0 3px 10px rgba(46,125,50,0.25);
+        }
+        .btn-sync.green:hover { box-shadow: 0 6px 14px rgba(46,125,50,0.35); }
+        .sync-card .stats {
+            display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+        }
+        .sync-card .stats .s {
+            background: white; border-radius: 8px; padding: 6px 10px;
+            font-size: 0.74rem; color: #5a7a95; border: 1px solid #e2eaf2;
+        }
+        .sync-card .stats .s b { color: #0b3d5c; font-size: 0.86rem; display: block; }
+        .sync-log {
+            margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+            background: #f0f4f8; font-size: 0.76rem; color: #4a5a6a;
+            max-height: 260px; overflow-y: auto; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
+        }
+        .sync-log:empty { display: none; }
+        .sync-log .ok { color: #2e7d32; font-weight: 700; }
+        .sync-log .warn { color: #b26a00; font-weight: 700; }
+        .sync-log .err { color: #c62828; font-weight: 700; }
+
+        .reset-intro {
+            background: #fff8e1; border: 1px solid #ffe082; color: #7a5a00;
+            border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+            font-size: 0.86rem; line-height: 1.5;
+        }
+        .reset-intro strong { color: #b71c1c; }
+        .reset-intro.info { background: #e3f2fd; border-color: #90caf9; color: #0d47a1; }
+        .reset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .reset-card {
+            background: #f8fbff; border: 1px solid #dde7f0;
+            border-radius: 14px; padding: 18px;
+        }
+        .reset-card h3 {
+            margin: 0 0 6px; color: #0b3d5c; font-size: 1rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .reset-card p {
+            margin: 0 0 14px; color: #5a7a95; font-size: 0.8rem; line-height: 1.4;
+        }
+        .reset-card .row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .reset-card select {
+            flex: 1; min-width: 120px;
+            padding: 10px 12px; border-radius: 10px;
+            border: 1px solid #b8cde0; font-size: 0.86rem;
+            background: white; color: #1e2a3a; outline: none;
+        }
+        .reset-card select:focus { border-color: #0b3d5c; box-shadow: 0 0 0 3px rgba(11,61,92,0.1); }
+        .btn-reset {
+            background: linear-gradient(135deg, #c62828, #e53935);
+            color: white; border: none; padding: 10px 18px;
+            border-radius: 10px; cursor: pointer; font-weight: 600;
+            font-size: 0.85rem; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+            box-shadow: 0 3px 10px rgba(198,40,40,0.25);
+        }
+        .btn-reset:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(198,40,40,0.35); }
+        .btn-reset:active { transform: translateY(0); }
+        .btn-reset.orange {
+            background: linear-gradient(135deg, #e65100, #fb8c00);
+            box-shadow: 0 3px 10px rgba(230,81,0,0.25);
+        }
+        .btn-reset.orange:hover { box-shadow: 0 6px 14px rgba(230,81,0,0.35); }
+        .btn-reset.purple {
+            background: linear-gradient(135deg, #6a1b9a, #8e24aa);
+            box-shadow: 0 3px 10px rgba(106,27,154,0.25);
+        }
+        .btn-reset.purple:hover { box-shadow: 0 6px 14px rgba(106,27,154,0.35); }
+        .reset-info { font-size: 0.72rem; color: #7a8fa3; margin-top: 10px; }
+
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: #1e3b5a; color: white; padding: 12px 22px;
+            border-radius: 30px; font-size: 0.86rem; font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25); z-index: 9999;
+            opacity: 0; transition: all 0.35s cubic-bezier(.2,.9,.3,1.3);
+            pointer-events: none; max-width: 90vw; text-align: center;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.success { background: #2e7d32; }
+        .toast.error { background: #c62828; }
+
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(10,25,40,0.55); z-index: 1000;
+            align-items: center; justify-content: center; padding: 16px;
+            backdrop-filter: blur(2px);
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: white; border-radius: 18px; padding: 24px;
+            max-width: 440px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: popIn 0.25s ease;
+        }
+        @keyframes popIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal h3 { margin: 0 0 8px; color: #0b3d5c; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .modal h3.warn { color: #b71c1c; }
+        .modal p { margin: 0 0 20px; color: #1e2a3a; font-size: 0.9rem; line-height: 1.5; }
+        .modal p strong { color: #b71c1c; }
+        .modal input[type="text"] {
+            width: 100%; padding: 11px 13px; border-radius: 10px;
+            border: 1px solid #b8cde0; font-size: 0.9rem; margin-bottom: 16px; outline: none;
+        }
+        .modal input[type="text"]:focus { border-color: #0b3d5c; box-shadow: 0 0 0 3px rgba(11,61,92,0.1); }
+        .modal-actions { display: flex; gap: 10px; }
+        .modal-actions button {
+            flex: 1; padding: 12px; border-radius: 10px; cursor: pointer;
+            font-weight: 600; font-size: 0.88rem; border: none; transition: all 0.2s;
+        }
+        .modal-actions .cancel { background: #e9f0f7; color: #1e3b5a; }
+        .modal-actions .cancel:hover { background: #d0e0f0; }
+        .modal-actions .confirm {
+            background: linear-gradient(135deg, #c62828, #e53935);
+            color: white; box-shadow: 0 3px 10px rgba(198,40,40,0.3);
+        }
+        .modal-actions .confirm:hover { box-shadow: 0 6px 14px rgba(198,40,40,0.4); }
+        .modal-actions .primary {
+            background: linear-gradient(135deg, #2e7d32, #66bb6a);
+            color: white; box-shadow: 0 3px 10px rgba(46,125,50,0.3);
+        }
+        .modal-actions .primary:hover { box-shadow: 0 6px 14px rgba(46,125,50,0.4); }
+
+        .conflict-panel {
+            margin-top: 12px; padding: 12px; border-radius: 10px;
+            background: #fff8e1; border: 1px solid #ffe082;
+            font-size: 0.74rem; color: #7a5a00; line-height: 1.5;
+            max-height: 220px; overflow-y: auto;
+        }
+        .conflict-panel:empty { display: none; }
+        .conflict-panel b { color: #b26a00; }
+        .conflict-panel .item {
+            padding: 5px 0; border-bottom: 1px dashed #ffe082;
+        }
+        .conflict-panel .item:last-child { border-bottom: none; }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .tab-btn { padding: 9px 14px; font-size: 0.82rem; }
+            .tab-panel { padding: 14px; border-radius: 0 14px 14px 14px; }
+            table.hafalan { font-size: 0.78rem; min-width: 700px; }
+            table.hafalan thead th { padding: 9px 6px; font-size: 0.7rem; }
+            table.hafalan tbody td { padding: 8px 6px; }
+            td.col-no { width: 36px; }
+            .pct-pill { min-width: 46px; padding: 5px 7px; font-size: 0.72rem; }
+            .reset-card { padding: 14px; }
+            .lb-card { padding: 12px 13px; }
+            .lb-name { font-size: 0.8rem; }
+            .lb-list li { padding: 6px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>📖 HAFALAN SANTRI</h1>
+            <p>Aplikasi Pengelola data setoran hafalan Santri MADRASAH TAHFIDZ II PONPES YUSUF ABDUSSATAR</p>
+        </div>
+
+        <div class="tabs" id="tabs">
+            <button class="tab-btn active" data-tab="awwal">I'dad Awwal</button>
+            <button class="tab-btn" data-tab="tsani">I'dad Tsani</button>
+            <button class="tab-btn" data-tab="tsalis">I'dad Tsalis</button>
+            <button class="tab-btn sync-tab" data-tab="sync">🔄 Sinkronisasi</button>
+            <button class="tab-btn danger" data-tab="reset">🗑️ Reset Data</button>
+        </div>
+
+        <div id="panels"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="modal-overlay" id="modalSiswa">
+        <div class="modal">
+            <h3 id="modalSiswaTitle">➕ Tambah Siswa</h3>
+            <p id="modalSiswaDesc">Masukkan nama siswa baru.</p>
+            <input type="text" id="modalSiswaInput" placeholder="Nama lengkap siswa" maxlength="60" autocomplete="off">
+            <div class="modal-actions">
+                <button class="cancel" id="modalSiswaCancel">Batal</button>
+                <button class="primary" id="modalSiswaSave">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalConfirm">
+        <div class="modal">
+            <h3 class="warn" id="modalConfirmTitle">⚠️ Konfirmasi</h3>
+            <p id="modalMessage">Yakin?</p>
+            <div class="modal-actions">
+                <button class="cancel" id="modalCancel">Batal</button>
+                <button class="confirm" id="modalConfirmBtn">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        const TOP_N = 5;
+
+        let toastTimer = null;
+        function showToast(msg, type = '') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast show ' + type;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { t.className = 'toast ' + type; }, 2600);
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        function getSiswaOverallPercent(kelas, siswa) {
+            let sumFull = 0, sumSetor = 0, n = 0;
+            JUZ_LIST.forEach(juz => {
+                const prog = getProgressSiswaAllStages(kelas, juz, siswa);
+                sumFull += prog.fullPercent;
+                sumSetor += prog.stages.setor.percent;
+                n++;
+            });
+            const avgFull = n > 0 ? sumFull / n : 0;
+            const avgSetor = n > 0 ? sumSetor / n : 0;
+            const useSetor = (sumFull === 0 && avgSetor > 0);
+            return {
+                percent: Math.round(useSetor ? avgSetor : avgFull),
+                mode: useSetor ? 'setor' : 'full'
+            };
+        }
+
+        function getLeaderboard(kelas) {
+            const siswaList = getSiswaList(kelas);
+            const scored = siswaList.map(nama => {
+                const info = getSiswaOverallPercent(kelas, nama);
+                return { nama, percent: info.percent, mode: info.mode };
+            });
+            const hasAnyData = scored.some(s => s.percent > 0);
+            if (!hasAnyData) {
+                return { top: [], bottom: [], mode: 'empty', hasAnyData: false };
+            }
+            const top = scored
+                .filter(s => s.percent > 0)
+                .sort((a, b) => b.percent - a.percent || a.nama.localeCompare(b.nama))
+                .slice(0, TOP_N);
+            const topNames = new Set(top.map(s => s.nama));
+            const bottom = scored
+                .filter(s => !topNames.has(s.nama))
+                .sort((a, b) => a.percent - b.percent || a.nama.localeCompare(b.nama))
+                .slice(0, TOP_N);
+            const anyFull = scored.some(s => s.mode === 'full');
+            return { top, bottom, mode: anyFull ? 'full' : 'setor', hasAnyData: true };
+        }
+
+        function renderLeaderboardHTML(kelas) {
+            const lb = getLeaderboard(kelas);
+            if (!lb.hasAnyData) {
+                return `
+                    <div class="leaderboard-grid">
+                        <div class="lb-card top" style="grid-column: 1 / -1;">
+                            <h3 style="justify-content: center;">🏆 Top ${TOP_N} Hafalan Terbanyak &amp; Terendah</h3>
+                            <div class="lb-empty">
+                                <span class="icon">📭</span>
+                                Belum ada data hafalan untuk <strong>${getKelasName(kelas)}</strong>.<br>
+                                <span style="font-size:0.72rem;">Leaderboard muncul setelah ada siswa yang mulai setoran.</span>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            const renderList = (items, type) => {
+                if (items.length === 0) {
+                    const emptyMsg = type === 'top'
+                        ? 'Belum ada siswa dengan progress &gt; 0%.'
+                        : 'Semua siswa sudah memiliki progress &gt; 0%.';
+                    return `<div class="lb-empty">${emptyMsg}</div>`;
+                }
+                return `<ul class="lb-list">
+                    ${items.map((s, i) => {
+                        const rankCls = type === 'top' && i < 3 ? `rank-${i + 1}` : '';
+                        const zeroStyle = (s.percent === 0) ? ' style="opacity:0.85;"' : '';
+                        return `<li${zeroStyle}>
+                            <span class="lb-rank ${rankCls}">${i + 1}</span>
+                            <span class="lb-name" title="${escapeHtml(s.nama)}">${escapeHtml(s.nama)}</span>
+                            <span class="lb-pct">${s.percent}%</span>
+                        </li>`;
+                    }).join('')}
+                </ul>`;
+            };
+            const noteText = lb.mode === 'full'
+                ? "Persentase = rata-rata Lulus Tasmi' seluruh juz."
+                : "Persentase = rata-rata progress Setor seluruh juz (belum ada Tasmi' lulus).";
+            return `
+                <div class="leaderboard-grid">
+                    <div class="lb-card top">
+                        <h3>🏆 Top ${TOP_N} Hafalan Terbanyak <span class="count">${getKelasName(kelas)}</span></h3>
+                        ${renderList(lb.top, 'top')}
+                        <div class="lb-note">${noteText}</div>
+                    </div>
+                    <div class="lb-card bottom">
+                        <h3>⚠️ ${TOP_N} Hafalan Terendah <span class="count">Perlu Perhatian</span></h3>
+                        ${renderList(lb.bottom, 'bottom')}
+                        <div class="lb-note">${noteText}</div>
+                    </div>
+                </div>`;
+        }
+
+        function renderKelasPanels() {
+            let html = '';
+            KELAS_LIST.forEach((kelas, i) => {
+                const siswaList = getSiswaList(kelas);
+                const lb = getLeaderboard(kelas);
+                const topNames = new Set(lb.top.map(s => s.nama));
+                const bottomNames = new Set(lb.bottom.map(s => s.nama));
+
+                let rows = '';
+                if (siswaList.length === 0) {
+                    rows = `<tr><td colspan="${2 + JUZ_LIST.length + 1}" style="text-align:center; padding:30px; color:#7a8fa3; font-style:italic;">
+                        Belum ada siswa di kelas ini.<br>
+                        Klik <b>➕ Tambah Siswa</b> untuk menambah, atau<br>
+                        buka tab <b>🗑️ Reset Data</b> → <b>Reset Daftar Siswa ke Contoh</b> untuk memuat 35 siswa contoh.
+                    </td></tr>`;
+                } else {
+                    siswaList.forEach((nama, idx) => {
+                        const isTop = topNames.has(nama);
+                        const isBottom = bottomNames.has(nama);
+                        const rowCls = isTop ? 'row-top' : (isBottom ? 'row-bottom' : '');
+                        let tagHTML = '';
+                        if (isTop) tagHTML = `<span class="tag top">TOP</span>`;
+                        else if (isBottom) tagHTML = `<span class="tag bottom">LOW</span>`;
+
+                        let cells = `<td class="col-no">${idx + 1}</td>
+                                     <td class="col-nama">${escapeHtml(nama)}${tagHTML}</td>`;
+                        JUZ_LIST.forEach(juz => {
+                            const prog = getProgressSiswa(kelas, juz, nama);
+                            const cls = getPillClass(prog.percent);
+                            const url = `control.html?kelas=${kelas}&juz=${juz}&siswa=${encodeURIComponent(nama)}`;
+                            cells += `<td class="col-juz">
+                                <a class="pct-pill ${cls}" href="${url}" title="Buka kontrol ${escapeHtml(nama)} — Juz ${juz}">${prog.percent}%</a>
+                            </td>`;
+                        });
+                        cells += `<td class="col-aksi">
+                            <button class="icon-btn" data-action="edit" data-kelas="${kelas}" data-nama="${escapeHtml(nama)}" title="Edit nama">✏️</button>
+                            <button class="icon-btn danger" data-action="delete" data-kelas="${kelas}" data-nama="${escapeHtml(nama)}" title="Hapus siswa">🗑️</button>
+                        </td>`;
+                        rows += `<tr class="${rowCls}">${cells}</tr>`;
+                    });
+                }
+
+                html += `<div class="tab-panel ${i === 0 ? 'active' : ''}" data-panel="${kelas}">
+                    <div class="panel-header">
+                        <h2>
+                            ${getKelasName(kelas)}
+                            <span class="badge">${siswaList.length} siswa</span>
+                        </h2>
+                        <button class="btn-add-siswa" data-action="add" data-kelas="${kelas}">➕ Tambah Siswa</button>
+                    </div>
+                    ${renderLeaderboardHTML(kelas)}
+                    <div class="table-wrap">
+                        <table class="hafalan">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama Siswa</th>
+                                    ${JUZ_LIST.map(j => `<th>Juz ${j}</th>`).join('')}
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>`;
+            });
+            return html;
+        }
+
+        function renderSyncPanel() {
+            const device = getDeviceMeta();
+            const summary = getDataSummary();
+
+            return `<div class="tab-panel" data-panel="sync">
+                <div class="panel-header">
+                    <h2>🔄 Sinkronisasi Data Antar Perangkat</h2>
+                    <span class="badge">${summary.total} centang • ${summary.totalSiswa} siswa</span>
+                </div>
+
+                <div class="reset-intro info">
+                    ℹ️ <strong>Cara kerja:</strong>
+					<ol>
+					<li>Setiap perangkat menyimpan data lokal. 
+					<li>Untuk menggabungkan,<strong>export</strong> data dari satu perangkat, lalu <strong>import</strong> file JSON-nya di perangkat lain.
+                    <li>Data digabung secara aman (data terbaru menang), termasuk <strong>daftar siswa</strong>, <strong>penghapusan</strong>,
+                    dan <strong>reset</strong>. Tidak ada yang hilang.
+                    <li>
+                    <strong>Tips multi-perangkat:</strong> Setelah semua perangkat saling import, lakukan <strong>export ulang + import sekali lagi</strong>
+                    agar semua perangkat benar-benar identik (round-2 sync).
+					</ol>
+                </div>
+
+                <div class="sync-grid">
+                    <div class="sync-card">
+                        <h3>📱 Identitas Perangkat</h3>
+                        <p>Beri nama perangkat ini agar mudah dikenali saat bertukar data.</p>
+                        <div class="device-box">
+                            <div class="lbl">Device ID (otomatis)</div>
+                            <div class="val">${escapeHtml(device.deviceId)}</div>
+                        </div>
+                        <input type="text" id="deviceNameInput" placeholder="Contoh: HP Ustadz Ahmad"
+                               value="${escapeHtml(device.deviceName || '')}" maxlength="40">
+                        <button class="btn-sync" id="saveDeviceBtn">💾 Simpan Nama</button>
+                        <div class="sync-log" id="deviceLog"></div>
+                    </div>
+
+                    <div class="sync-card">
+                        <h3>📤 Export Data</h3>
+                        <p>Unduh file JSON berisi semua data centang + daftar siswa + tombstone. Kirim ke perangkat lain lewat WhatsApp/Bluetooth/USB, lalu import di sana.</p>
+                        <div class="stats">
+                            <div class="s"><b>${summary.setor}</b>Setor</div>
+                            <div class="s"><b>${summary.takrir}</b>Takrir</div>
+                            <div class="s"><b>${summary.tasmi}</b>Tasmi'</div>
+                            <div class="s"><b>${summary.totalSiswa}</b>Siswa</div>
+                        </div>
+                        <button class="btn-sync green" id="exportBtn" style="margin-top:12px;">⬇️ Download File JSON</button>
+                        <div class="sync-log" id="exportLog"></div>
+                    </div>
+
+                    <div class="sync-card">
+                        <h3>📥 Import Data (Merge)</h3>
+                        <p>Pilih file JSON dari perangkat lain. Data akan <strong>digabung</strong> — data lebih baru menang, siswa baru ditambahkan, penghapusan & reset ikut tersinkron.</p>
+                        <input type="file" id="importFile" accept=".json,application/json"
+                               style="width:100%; padding:10px; border-radius:10px; border:1px dashed #b8cde0; background:white; margin-bottom:10px;">
+                        <button class="btn-sync" id="importBtn">⬆️ Proses Import</button>
+                        <div class="sync-log" id="importLog"></div>
+                        <div class="conflict-panel" id="conflictPanel"></div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function renderResetPanel() {
+            const totalKeys = countStoredKeys();
+            const summary = getDataSummary();
+            return `<div class="tab-panel" data-panel="reset">
+                <div class="panel-header">
+                    <h2>🗑️ Reset Data</h2>
+                    <span class="badge">${totalKeys} centang • ${summary.totalSiswa} siswa</span>
+                </div>
+
+                <div class="reset-intro info">
+					ℹ️ <strong>ADA 2 KATEGORI RESET:</strong>
+					<ol>
+                    <li><strong>Reset Hafalan</strong> — menghapus centang Setor/Takrir/Tasmi'. Daftar siswa <strong>tetap utuh</strong>.
+                    <li><strong>Reset Daftar Siswa</strong> — mengubah daftar siswa (reset ke contoh, atau kosongkan).
+                    </ol>
+                    Semua reset <strong>tersinkron</strong> ke perangkat lain saat import berikutnya (via tombstone).
+                </div>
+
+                <h3 style="color:#0b3d5c; margin: 8px 0 12px; font-size: 1rem;">📚 Reset Hafalan (Centang)</h3>
+                <div class="reset-intro">
+                    ⚠️ <strong>Perhatian:</strong>
+					<ol>
+					<li>Tindakan reset bersifat <strong>permanen</strong> di perangkat ini dan <strong>akan tersinkron</strong> ke perangkat lain saat import berikutnya.
+                    <li>Semua centang setoran (Setor, Takrir, Tasmi' &amp; Ikhtibar) pada data yang dipilih akan dihapus.
+                    </ol>
+                    <em>Catatan:</em> Reset ini <strong>tidak</strong> menghapus daftar siswa.
+                </div>
+                <div class="reset-grid">
+                    <div class="reset-card">
+                        <h3>📚 Reset per Juz</h3>
+                        <p>Hapus semua data hafalan satu kelas pada juz tertentu.</p>
+                        <div class="row">
+                            <select id="resetKelasJuz_kelas">
+                                ${KELAS_LIST.map(k => `<option value="${k}">${getKelasName(k)}</option>`).join('')}
+                            </select>
+                            <select id="resetKelasJuz_juz">
+                                ${JUZ_LIST.map(j => `<option value="${j}">Juz ${j}</option>`).join('')}
+                            </select>
+                            <button class="btn-reset" data-action="juz">Reset Juz</button>
+                        </div>
+                        <div class="reset-info" id="infoJuz"></div>
+                    </div>
+                    <div class="reset-card">
+                        <h3>🎓 Reset per Kelas</h3>
+                        <p>Hapus semua data hafalan satu kelas di seluruh juz.</p>
+                        <div class="row">
+                            <select id="resetKelas_kelas">
+                                ${KELAS_LIST.map(k => `<option value="${k}">${getKelasName(k)}</option>`).join('')}
+                            </select>
+                            <button class="btn-reset" data-action="kelas">Reset Kelas</button>
+                        </div>
+                        <div class="reset-info" id="infoKelas"></div>
+                    </div>
+                    <div class="reset-card" style="border-color:#ffcdd2; background:#fff5f5;">
+                        <h3 style="color:#b71c1c;">💥 Reset Semua Hafalan</h3>
+                        <p>Hapus <strong>seluruh</strong> data hafalan dari semua kelas dan semua juz.</p>
+                        <div class="row">
+                            <button class="btn-reset" data-action="semua" style="flex:1; justify-content:center;">Hapus Semua Hafalan</button>
+                        </div>
+                        <div class="reset-info" id="infoSemua"></div>
+                    </div>
+                </div>
+
+                <h3 style="color:#0b3d5c; margin: 22px 0 12px; font-size: 1rem;">👥 Reset Daftar Siswa</h3>
+                <div class="reset-intro" style="background:#fff3e0; border-color:#ffcc80; color:#7a4500;">
+                    ⚠️ <strong>Perhatian:</strong> Tindakan di bawah mengubah <strong>daftar siswa</strong>.
+                    Siswa yang dihapus akan <strong>kehilangan semua data hafalannya</strong>.
+                    Semua perubahan <strong>tersinkron</strong> ke perangkat lain.
+                </div>
+                <div class="reset-grid">
+                    <div class="reset-card" style="border-color:#ce93d8; background:#f3e5f5;">
+                        <h3 style="color:#6a1b9a;">📦 Reset Daftar Siswa ke Data Contoh</h3>
+                        <p>
+                            Ganti daftar siswa dengan <strong>35 siswa contoh</strong> (11 Awwal, 11 Tsani, 13 Tsalis).
+                            <br>• Siswa lama yang <strong>tidak ada</strong> di daftar contoh → dihapus + hafalan dibersihkan.
+                            <br>• Siswa contoh yang <strong>belum ada</strong> → ditambahkan.
+                            <br>• Siswa yang <strong>sama</strong> (case-insensitive) → dipertahankan beserta hafalannya.
+                        </p>
+                        <div class="row">
+                            <button class="btn-reset purple" data-action="seed" style="flex:1; justify-content:center;">📦 Reset ke Data Contoh</button>
+                        </div>
+                        <div class="reset-info">Berguna untuk mengembalikan daftar siswa bawaan.</div>
+                    </div>
+                    <div class="reset-card" style="border-color:#ffcdd2; background:#fff5f5;">
+                        <h3 style="color:#b71c1c;">🧹 Kosongkan Semua Siswa</h3>
+                        <p>
+                            Hapus <strong>SEMUA siswa</strong> dari ketiga kelas.
+                            <br>• Semua data hafalan siswa juga <strong>ikut terhapus</strong>.
+                            <br>• Daftar siswa menjadi kosong.
+                            <br>• <em>Daftar siswa tidak akan otomatis terisi lagi</em> — harus tambah manual atau reset ke contoh.
+                        </p>
+                        <div class="row">
+                            <button class="btn-reset" data-action="kosongkan" style="flex:1; justify-content:center;">🧹 Kosongkan Semua Siswa</button>
+                        </div>
+                        <div class="reset-info">Berguna jika ingin mulai dari nol dengan siswa baru.</div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function renderAll() {
+            const panels = document.getElementById('panels');
+            panels.innerHTML = renderKelasPanels() + renderSyncPanel() + renderResetPanel();
+            bindAllEvents();
+            updateResetInfo();
+        }
+
+        function bindAllEvents() {
+            document.querySelectorAll('.btn-add-siswa').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openSiswaModal('add', btn.dataset.kelas, '');
+                });
+            });
+            document.querySelectorAll('.icon-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const action = btn.dataset.action;
+                    const kelas = btn.dataset.kelas;
+                    const nama = btn.dataset.nama;
+                    if (action === 'edit') openSiswaModal('edit', kelas, nama);
+                    else if (action === 'delete') confirmDeleteSiswa(kelas, nama);
+                });
+            });
+
+            document.querySelectorAll('.reset-card select').forEach(sel => {
+                sel.addEventListener('change', updateResetInfo);
+            });
+            document.querySelectorAll('.btn-reset').forEach(btn => {
+                btn.addEventListener('click', () => handleReset(btn.dataset.action));
+            });
+
+            bindSyncEvents();
+        }
+
+        function bindSyncEvents() {
+            const nameInput = document.getElementById('deviceNameInput');
+            const saveBtn = document.getElementById('saveDeviceBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            const importBtn = document.getElementById('importBtn');
+            const importFile = document.getElementById('importFile');
+
+            if (saveBtn) saveBtn.addEventListener('click', () => {
+                const name = (nameInput.value || '').trim();
+                if (!name) { logSync('deviceLog', 'Nama tidak boleh kosong.', 'err'); return; }
+                setDeviceName(name);
+                logSync('deviceLog', `Nama perangkat disimpan: <b>${escapeHtml(name)}</b>`, 'ok');
+                showToast('Nama perangkat disimpan.', 'success');
+            });
+
+            if (exportBtn) exportBtn.addEventListener('click', () => {
+                try {
+                    const data = exportData();
+                    const count = Object.keys(data.records).length;
+                    const siswaCount = KELAS_LIST.reduce((s, k) => s + ((data.siswa[k] || []).length), 0);
+                    const tombCount = Object.keys(data.siswaTombstones || {}).length;
+                    const recTombCount = Object.keys(data.recordTombstones || {}).length;
+                    if (count === 0 && siswaCount === 0 && tombCount === 0 && recTombCount === 0) {
+                        logSync('exportLog', 'Tidak ada data untuk diexport.', 'warn');
+                        return;
+                    }
+                    const json = JSON.stringify(data, null, 2);
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    const safeName = (data.deviceName || 'device').replace(/[^a-zA-Z0-9_-]/g, '_');
+                    const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+                    a.href = url;
+                    a.download = `hafalan_${safeName}_${ts}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    logSync('exportLog',
+                        `✅ Berhasil export:<br>• <b>${count}</b> centang hafalan<br>• <b>${siswaCount}</b> siswa<br>• <b>${tombCount}</b> tombstone siswa<br>• <b>${recTombCount}</b> tombstone record (reset)<br>File: <b>${escapeHtml(a.download)}</b>`,
+                        'ok');
+                    showToast('Export berhasil.', 'success');
+                } catch (e) {
+                    logSync('exportLog', 'Gagal export: ' + escapeHtml(e.message), 'err');
+                }
+            });
+
+            if (importBtn) importBtn.addEventListener('click', () => {
+                const f = importFile.files && importFile.files[0];
+                if (!f) { logSync('importLog', 'Pilih file JSON terlebih dahulu.', 'warn'); return; }
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const json = JSON.parse(ev.target.result);
+                        const res = importData(json);
+                        let msg = `✅ Import dari <b>${escapeHtml(res.sourceDeviceName)}</b>:<br>` +
+                            `• Centang baru: <b>${res.added}</b><br>` +
+                            `• Centang diperbarui: <b>${res.updated}</b><br>` +
+                            `• Centang dilewati (data lokal lebih baru): <b>${res.skipped}</b><br>` +
+                            `• Record dihapus oleh tombstone reset: <b>${res.recordsDeletedByTombstone}</b><br>` +
+                            `• Siswa baru ditambahkan: <b>${res.siswaAdded}</b><br>` +
+                            `• Siswa dilewati (sudah ada): <b>${res.siswaSkipped}</b><br>` +
+                            `• Siswa dihapus (tombstone): <b>${res.siswaDeleted}</b><br>` +
+                            `• Hafalan ikut terhapus: <b>${res.hafalanPurged}</b> siswa`;
+                        logSync('importLog', msg, 'ok');
+
+                        const cp = document.getElementById('conflictPanel');
+                        if (cp) {
+                            if (res.conflicts && res.conflicts.length > 0) {
+                                cp.innerHTML = `<b>⚠️ ${res.conflicts.length} konflik terdeteksi:</b>` +
+                                    res.conflicts.map(c => `<div class="item">• <b>${escapeHtml(c.nama || '?')}</b> (${escapeHtml(c.kelas)}): ${escapeHtml(c.reason)}</div>`).join('');
+                            } else {
+                                cp.innerHTML = '';
+                            }
+                        }
+
+                        importFile.value = '';
+                        showToast('Import berhasil.', 'success');
+                        const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+                        renderAll();
+                        activateTab(activeTab);
+                    } catch (e) {
+                        logSync('importLog', '❌ ' + escapeHtml(e.message), 'err');
+                    }
+                };
+                reader.onerror = () => logSync('importLog', 'Gagal membaca file.', 'err');
+                reader.readAsText(f);
+            });
+        }
+
+        function logSync(id, msg, type) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = `<span class="${type || ''}">${msg}</span>`;
+        }
+
+        const modalSiswa = document.getElementById('modalSiswa');
+        let siswaModalState = { mode: 'add', kelas: '', namaLama: '' };
+
+        function openSiswaModal(mode, kelas, namaLama) {
+            siswaModalState = { mode, kelas, namaLama };
+            const title = document.getElementById('modalSiswaTitle');
+            const desc = document.getElementById('modalSiswaDesc');
+            const input = document.getElementById('modalSiswaInput');
+            if (mode === 'add') {
+                title.textContent = `➕ Tambah Siswa — ${getKelasName(kelas)}`;
+                desc.textContent = 'Masukkan nama siswa baru.';
+                input.value = '';
+            } else {
+                title.textContent = `✏️ Edit Nama Siswa — ${getKelasName(kelas)}`;
+                desc.textContent = `Mengubah nama akan memindahkan semua data hafalan siswa ini.`;
+                input.value = namaLama;
+            }
+            modalSiswa.classList.add('show');
+            setTimeout(() => input.focus(), 100);
+        }
+
+        document.getElementById('modalSiswaCancel').addEventListener('click', closeSiswaModal);
+        document.getElementById('modalSiswaSave').addEventListener('click', saveSiswaModal);
+        modalSiswa.addEventListener('click', e => { if (e.target === modalSiswa) closeSiswaModal(); });
+        document.getElementById('modalSiswaInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') saveSiswaModal();
+            else if (e.key === 'Escape') closeSiswaModal();
+        });
+
+        function closeSiswaModal() {
+            modalSiswa.classList.remove('show');
+            siswaModalState = { mode: 'add', kelas: '', namaLama: '' };
+        }
+
+        function saveSiswaModal() {
+            const input = document.getElementById('modalSiswaInput');
+            const nama = (input.value || '').trim();
+            try {
+                if (siswaModalState.mode === 'add') {
+                    addSiswa(siswaModalState.kelas, nama);
+                    showToast(`Siswa "${nama}" ditambahkan.`, 'success');
+                } else {
+                    editSiswa(siswaModalState.kelas, siswaModalState.namaLama, nama);
+                    showToast(`Nama diubah menjadi "${nama}".`, 'success');
+                }
+                closeSiswaModal();
+                const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+                renderAll();
+                activateTab(activeTab);
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
+        let pendingConfirm = null;
+        const modalConfirm = document.getElementById('modalConfirm');
+
+        function showConfirm(title, msg, onConfirm) {
+            document.getElementById('modalConfirmTitle').textContent = title;
+            document.getElementById('modalMessage').innerHTML = msg;
+            pendingConfirm = onConfirm;
+            modalConfirm.classList.add('show');
+        }
+        document.getElementById('modalCancel').addEventListener('click', () => {
+            modalConfirm.classList.remove('show');
+            pendingConfirm = null;
+        });
+        document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+            if (pendingConfirm) {
+                try {
+                    const ret = pendingConfirm();
+                    if (ret && typeof ret === 'object') {
+                        if (ret.deleted !== undefined) {
+                            showToast(`Berhasil. ${ret.deleted} data dihapus.`, 'success');
+                        } else if (ret.added !== undefined || ret.kept !== undefined) {
+                            showToast(`Berhasil. ${ret.deleted || 0} dihapus, ${ret.added || 0} ditambah, ${ret.kept || 0} dipertahankan.`, 'success');
+                        } else {
+                            showToast('Berhasil.', 'success');
+                        }
+                    } else {
+                        showToast('Berhasil.', 'success');
+                    }
+                    const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+                    renderAll();
+                    activateTab(activeTab);
+                } catch (e) {
+                    showToast(e.message, 'error');
+                }
+            }
+            modalConfirm.classList.remove('show');
+            pendingConfirm = null;
+        });
+        modalConfirm.addEventListener('click', e => {
+            if (e.target === modalConfirm) {
+                modalConfirm.classList.remove('show');
+                pendingConfirm = null;
+            }
+        });
+
+        function confirmDeleteSiswa(kelas, nama) {
+            showConfirm(
+                '⚠️ Hapus Siswa',
+                `Hapus <strong>${escapeHtml(nama)}</strong> dari <strong>${getKelasName(kelas)}</strong>?<br><br>
+                 Semua data centang hafalan siswa ini (Setor, Takrir, Tasmi') juga akan dihapus.<br><br>
+                 <em>Penghapusan akan tersinkron ke perangkat lain saat import berikutnya.</em>`,
+                () => { deleteSiswa(kelas, nama); }
+            );
+        }
+
+        function updateResetInfo() {
+            const kk = document.getElementById('resetKelasJuz_kelas');
+            const kj = document.getElementById('resetKelasJuz_juz');
+            if (kk && kj) {
+                const n = countStoredKeys(kk.value, parseInt(kj.value));
+                document.getElementById('infoJuz').textContent = `${n} data centang akan dihapus (tersinkron saat import)`;
+            }
+            const k = document.getElementById('resetKelas_kelas');
+            if (k) {
+                const n = countStoredKeys(k.value);
+                document.getElementById('infoKelas').textContent = `${n} data centang akan dihapus (tersinkron saat import)`;
+            }
+            const total = countStoredKeys();
+            const infSem = document.getElementById('infoSemua');
+            if (infSem) infSem.textContent = `${total} data centang akan dihapus (tersinkron saat import)`;
+        }
+
+        function handleReset(action) {
+            if (action === 'juz') {
+                const kk = document.getElementById('resetKelasJuz_kelas').value;
+                const kj = parseInt(document.getElementById('resetKelasJuz_juz').value);
+                const n = countStoredKeys(kk, kj);
+                if (n === 0) { showToast('Tidak ada data untuk direset.', 'error'); return; }
+                showConfirm('⚠️ Reset per Juz',
+                    `Hapus <strong>${n} data</strong> hafalan <strong>${getKelasName(kk)} — Juz ${kj}</strong>?<br><br>
+                     Data yang direset akan <strong>tersinkron</strong> ke perangkat lain saat import berikutnya.`,
+                    () => { const d = resetKelasJuz(kk, kj); return { deleted: d }; });
+            } else if (action === 'kelas') {
+                const kk = document.getElementById('resetKelas_kelas').value;
+                const n = countStoredKeys(kk);
+                if (n === 0) { showToast('Tidak ada data untuk direset.', 'error'); return; }
+                showConfirm('⚠️ Reset per Kelas',
+                    `Hapus <strong>${n} data</strong> hafalan seluruh juz kelas <strong>${getKelasName(kk)}</strong>?<br><br>
+                     Data yang direset akan <strong>tersinkron</strong> ke perangkat lain saat import berikutnya.`,
+                    () => { const d = resetKelas(kk); return { deleted: d }; });
+            } else if (action === 'semua') {
+                const n = countStoredKeys();
+                if (n === 0) { showToast('Tidak ada data untuk direset.', 'error'); return; }
+                showConfirm('💥 Reset Semua Hafalan',
+                    `Hapus <strong>SEMUA ${n} data</strong> hafalan dari seluruh kelas dan seluruh juz?<br><br>
+                     Data yang direset akan <strong>tersinkron</strong> ke perangkat lain saat import berikutnya.`,
+                    () => { const d = resetSemua(); return { deleted: d }; });
+            } else if (action === 'seed') {
+                const summary = getDataSummary();
+                showConfirm('📦 Reset Daftar Siswa ke Data Contoh',
+                    `Ganti daftar siswa saat ini (<strong>${summary.totalSiswa} siswa</strong>) dengan <strong>35 siswa contoh</strong>?<br><br>
+                     • Siswa lama yang tidak ada di daftar contoh → <strong>dihapus</strong> + hafalan dibersihkan.<br>
+                     • Siswa contoh yang belum ada → <strong>ditambahkan</strong>.<br>
+                     • Siswa yang sama (nama cocok) → <strong>dipertahankan</strong> beserta hafalannya.<br><br>
+                     <em>Tersinkron ke perangkat lain saat import berikutnya.</em>`,
+                    () => resetSiswaKeContoh());
+            } else if (action === 'kosongkan') {
+                const summary = getDataSummary();
+                if (summary.totalSiswa === 0) {
+                    showToast('Daftar siswa sudah kosong.', 'error');
+                    return;
+                }
+                showConfirm('🧹 Kosongkan Semua Siswa',
+                    `Hapus <strong>SEMUA ${summary.totalSiswa} siswa</strong> dari ketiga kelas?<br><br>
+                     Semua data hafalan mereka juga akan <strong>ikut terhapus</strong>.<br><br>
+                     <em>Daftar siswa tidak akan otomatis terisi lagi setelah ini.</em><br>
+                     <em>Tersinkron ke perangkat lain saat import berikutnya.</em>`,
+                    () => kosongkanSemuaSiswa());
+            }
+        }
+
+        function activateTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.tab === tabId);
+            });
+            document.querySelectorAll('.tab-panel').forEach(p => {
+                p.classList.toggle('active', p.dataset.panel === tabId);
+            });
+        }
+        document.getElementById('tabs').addEventListener('click', e => {
+            const btn = e.target.closest('.tab-btn');
+            if (!btn) return;
+            activateTab(btn.dataset.tab);
+        });
+
+        renderAll();
+
+        window.addEventListener('pageshow', () => {
+            const activeTab = document.querySelector('.tab-btn.active');
+            const tabId = activeTab ? activeTab.dataset.tab : 'awwal';
+            renderAll();
+            activateTab(tabId);
+        });
+    </script>
+</body>
+</html>

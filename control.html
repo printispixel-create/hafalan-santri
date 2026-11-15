@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontrol Setoran Hafalan</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        html, body { margin: 0; padding: 0; }
+        body { background: #f4f7fc; padding: 16px; color: #1e2a3a; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .topbar {
+            display: flex; flex-wrap: wrap; gap: 12px;
+            align-items: center; justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .topbar-left { display: flex; flex-direction: column; gap: 8px; }
+        .back-btn {
+            background: #e9f0f7; border: 1px solid #b8cde0;
+            padding: 9px 16px; border-radius: 30px; cursor: pointer;
+            font-weight: 500; color: #1e3b5a; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.85rem; transition: all 0.2s; width: fit-content;
+        }
+        .back-btn:hover { background: #d0e0f0; }
+        .topbar h1 { margin: 0; font-size: clamp(1.1rem, 3.5vw, 1.45rem); color: #0b3d5c; }
+        .topbar .info { color: #5a7a95; font-size: 0.82rem; margin-top: 2px; }
+
+        .siswa-banner {
+            background: linear-gradient(135deg, #0b3d5c, #1a5a7a);
+            color: white; border-radius: 14px; padding: 18px 22px;
+            margin-bottom: 18px; display: flex; flex-wrap: wrap;
+            align-items: center; justify-content: space-between; gap: 14px;
+            box-shadow: 0 6px 18px rgba(11,61,92,0.18);
+        }
+        .siswa-banner .left { display: flex; align-items: center; gap: 14px; }
+        .siswa-banner .avatar {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.3rem; flex-shrink: 0;
+        }
+        .siswa-banner .nama { font-size: clamp(1rem, 3vw, 1.25rem); font-weight: 700; }
+        .siswa-banner .ket { font-size: 0.8rem; opacity: 0.9; margin-top: 3px; }
+        .siswa-banner .pct {
+            background: rgba(255,255,255,0.18); padding: 10px 20px;
+            border-radius: 30px; font-weight: 700; font-size: 1.1rem;
+            white-space: nowrap;
+        }
+
+        .summary-cards {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 18px;
+        }
+        .summary-card {
+            background: white; border-radius: 12px; padding: 14px 16px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid #0b3d5c;
+        }
+        .summary-card .label { font-size: 0.72rem; color: #5a7a95; margin-bottom: 5px; line-height: 1.3; }
+        .summary-card .value { font-size: clamp(1.15rem, 3vw, 1.5rem); font-weight: 700; color: #0b3d5c; line-height: 1.1; }
+        .summary-card .sub { font-size: 0.68rem; color: #7a8fa3; margin-top: 4px; line-height: 1.3; }
+
+        .progress-card {
+            background: white; border-radius: 16px; padding: 18px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            border: 1px solid #e2eaf2;
+            margin-bottom: 18px;
+        }
+        .progress-card h2 {
+            margin: 0 0 14px; color: #0b3d5c;
+            font-size: clamp(1rem, 2.8vw, 1.15rem);
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .progress-stages {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        .stage-box {
+            background: #f8fbff; border: 1px solid #e2eaf2;
+            border-radius: 12px; padding: 12px 14px;
+        }
+        .stage-box .label {
+            font-size: 0.72rem; color: #5a7a95; margin-bottom: 6px;
+            font-weight: 600; display: flex; justify-content: space-between;
+        }
+        .stage-box .label .pct-val { color: #0b3d5c; }
+        .stage-box .bar {
+            background: #e9f0f7; border-radius: 20px; height: 16px;
+            overflow: hidden; position: relative;
+        }
+        .stage-box .fill {
+            height: 100%; border-radius: 20px; transition: width 0.4s ease;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 0.64rem; font-weight: 700; min-width: 34px;
+        }
+        .stage-box.setor  .fill { background: linear-gradient(90deg, #2e7d32, #4caf50); }
+        .stage-box.takrir .fill { background: linear-gradient(90deg, #f9a825, #fbc02d); color: #4a3500; }
+        .stage-box.tasmi  .fill { background: linear-gradient(90deg, #6a1b9a, #8e24aa); }
+
+        .tasmi-juz-card {
+            background: linear-gradient(135deg, #f3e5f5, #ede7f6);
+            border: 1px solid #ce93d8; border-radius: 14px;
+            padding: 16px 18px; margin-bottom: 18px;
+            display: flex; flex-wrap: wrap; align-items: center;
+            justify-content: space-between; gap: 14px;
+        }
+        .tasmi-juz-card .info-wrap { flex: 1; min-width: 200px; }
+        .tasmi-juz-card .title {
+            font-weight: 700; color: #4a148c; font-size: 0.95rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tasmi-juz-card .desc {
+            font-size: 0.78rem; color: #6a1b9a; margin-top: 4px; line-height: 1.4;
+        }
+        .tasmi-juz-card .status-pill {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 0.7rem; font-weight: 700; margin-left: 6px;
+        }
+        .tasmi-juz-card .status-pill.done { background: #c8e6c9; color: #1b5e20; }
+        .tasmi-juz-card .status-pill.not  { background: #ffcdd2; color: #b71c1c; }
+        .tasmi-toggle {
+            display: flex; align-items: center; gap: 10px;
+            background: white; padding: 10px 18px; border-radius: 30px;
+            box-shadow: 0 3px 10px rgba(106,27,154,0.15);
+            cursor: pointer; user-select: none;
+            border: 2px solid #ce93d8; transition: all 0.2s;
+        }
+        .tasmi-toggle:hover { box-shadow: 0 5px 16px rgba(106,27,154,0.25); }
+        .tasmi-toggle.checked { background: #6a1b9a; border-color: #6a1b9a; }
+        .tasmi-toggle .cb-big {
+            width: 22px; height: 22px; accent-color: #6a1b9a; cursor: pointer;
+        }
+        .tasmi-toggle .txt {
+            font-weight: 700; color: #4a148c; font-size: 0.85rem;
+        }
+        .tasmi-toggle.checked .txt { color: white; }
+
+        .table-card {
+            background: white; border-radius: 16px; padding: 18px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            border: 1px solid #e2eaf2;
+        }
+        .table-card h2 {
+            margin: 0 0 14px; color: #0b3d5c;
+            font-size: clamp(1rem, 2.8vw, 1.15rem);
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .table-card h2 .badge {
+            background: #e9f0f7; color: #1e3b5a; padding: 3px 10px;
+            border-radius: 12px; font-size: 0.72rem; font-weight: 500;
+        }
+        .table-wrap {
+            overflow-x: auto; border-radius: 12px; border: 1px solid #e2eaf2;
+            -webkit-overflow-scrolling: touch;
+        }
+        table.setoran {
+            width: 100%; border-collapse: collapse; min-width: 700px;
+            font-size: 0.86rem;
+        }
+        table.setoran thead th {
+            background: linear-gradient(135deg, #0b3d5c, #1a5a7a);
+            color: white; padding: 11px 10px; text-align: center;
+            font-weight: 600; font-size: 0.76rem; white-space: nowrap;
+            position: sticky; top: 0; z-index: 2;
+        }
+        table.setoran thead th:first-child { border-top-left-radius: 11px; }
+        table.setoran thead th:last-child { border-top-right-radius: 11px; }
+        table.setoran thead th.th-setor  { background: linear-gradient(135deg, #1b5e20, #2e7d32); }
+        table.setoran thead th.th-takrir { background: linear-gradient(135deg, #b26a00, #f9a825); color: #fff8e1; }
+        table.setoran tbody td {
+            padding: 9px 10px; border-bottom: 1px solid #eef3f8;
+            vertical-align: middle; text-align: center;
+        }
+        table.setoran tbody tr:last-child td { border-bottom: none; }
+        table.setoran tbody tr:nth-child(even) { background: #f8fbff; }
+        table.setoran tbody tr:hover { background: #eef6ff; }
+        table.setoran td.col-no { color: #5a7a95; font-weight: 600; width: 46px; }
+        table.setoran td.col-surah { text-align: left; font-weight: 500; color: #1e3b5a; }
+        table.setoran td.col-status { width: 200px; text-align: left; }
+
+        .cb {
+            width: 22px; height: 22px; cursor: pointer;
+            accent-color: #2e7d32; vertical-align: middle;
+        }
+        .cb.stage-takrir { accent-color: #f9a825; }
+        .cb:disabled { cursor: not-allowed; opacity: 0.4; filter: grayscale(0.6); }
+
+        .status-text {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.78rem; font-weight: 700;
+            white-space: nowrap; padding: 2px 0;
+        }
+        .status-text .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            display: inline-block; flex-shrink: 0;
+        }
+        .status-text.belum-stor     { color: #c62828; }
+        .status-text.belum-stor .dot     { background: #c62828; }
+        .status-text.lanjut-takrir  { color: #b26a00; }
+        .status-text.lanjut-takrir .dot  { background: #f9a825; }
+        .status-text.belum-lulus    { color: #1565c0; }
+        .status-text.belum-lulus .dot    { background: #1565c0; }
+        .status-text.lulus          { color: #2e7d32; }
+        .status-text.lulus .dot          { background: #2e7d32; }
+
+        .empty-message {
+            text-align: center; padding: 40px 20px;
+            color: #7a8fa3; font-style: italic; background: white;
+            border-radius: 16px; border: 1px dashed #c0d0e0;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .topbar h1 { font-size: 1.05rem; }
+            .siswa-banner { padding: 14px 16px; }
+            .siswa-banner .avatar { width: 42px; height: 42px; font-size: 1.05rem; }
+            .siswa-banner .pct { padding: 8px 14px; font-size: 0.95rem; }
+            .summary-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .summary-card { padding: 11px 12px; }
+            .summary-card .value { font-size: 1.1rem; }
+            .progress-card, .table-card { padding: 12px; }
+            table.setoran { font-size: 0.74rem; min-width: 640px; }
+            table.setoran thead th { padding: 8px 5px; font-size: 0.64rem; }
+            table.setoran tbody td { padding: 7px 5px; }
+            .cb { width: 19px; height: 19px; }
+            .status-text { font-size: 0.7rem; }
+            .tasmi-juz-card { padding: 12px 14px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <div class="topbar-left">
+                <a href="index.html" class="back-btn">← Kembali ke Dashboard</a>
+                <div>
+                    <h1 id="pageTitle">Kontrol Setoran Hafalan</h1>
+                    <div class="info" id="pageInfo"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="siswaBanner"></div>
+        <div class="summary-cards" id="summaryCards"></div>
+        <div id="tasmiJuzCard"></div>
+
+        <div class="progress-card">
+            <h2>📊 Progress Tahapan</h2>
+            <div class="progress-stages" id="progressStages"></div>
+        </div>
+
+        <div class="table-card">
+            <h2>📋 Daftar Setoran <span class="badge" id="tableBadge"></span></h2>
+            <div class="table-wrap">
+                <table class="setoran">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th style="text-align:left;">Surah / Rentang Ayat</th>
+                            <th class="th-setor">Setor</th>
+                            <th class="th-takrir">Takrir</th>
+                            <th style="text-align:left;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="setoranBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const selectedKelas = params.get('kelas');
+        const selectedJuz = parseInt(params.get('juz'));
+        const selectedSiswa = params.get('siswa');
+
+        let surahList = [];
+
+        function getStatusInfo(setor, takrir, tasmiJuz) {
+            if (tasmiJuz) return { cls: 'lulus',         text: "Lulus Tasmi'" };
+            if (takrir)   return { cls: 'belum-lulus',   text: "Belum Lulus Tahap Tasmi'" };
+            if (setor)    return { cls: 'lanjut-takrir', text: "Lanjut Tahap Takrir" };
+            return              { cls: 'belum-stor',   text: "Belum Stor" };
+        }
+
+        function renderBanner() {
+            const el = document.getElementById('siswaBanner');
+            const progAll = getProgressSiswaAllStages(selectedKelas, selectedJuz, selectedSiswa);
+            const initial = selectedSiswa.trim().charAt(0).toUpperCase();
+            el.innerHTML = `
+                <div class="siswa-banner">
+                    <div class="left">
+                        <div class="avatar">${initial}</div>
+                        <div>
+                            <div class="nama">${selectedSiswa}</div>
+                            <div class="ket">${getKelasName(selectedKelas)} • Juz ${selectedJuz} • ${progAll.fullDone}/${progAll.total} surah lulus Tasmi'</div>
+                        </div>
+                    </div>
+                    <div class="pct">${progAll.fullPercent}%</div>
+                </div>`;
+        }
+
+        function renderSummary() {
+            const progAll = getProgressSiswaAllStages(selectedKelas, selectedJuz, selectedSiswa);
+            const container = document.getElementById('summaryCards');
+            container.innerHTML = `
+                <div class="summary-card">
+                    <div class="label">Total Surah Juz ${selectedJuz}</div>
+                    <div class="value">${progAll.total}</div>
+                    <div class="sub">surah/rentang ayat</div>
+                </div>
+                <div class="summary-card" style="border-left-color:#2e7d32;">
+                    <div class="label">Lulus Tasmi'</div>
+                    <div class="value">${progAll.fullDone}</div>
+                    <div class="sub">${progAll.fullPercent}% dari total</div>
+                </div>
+                <div class="summary-card" style="border-left-color:#f9a825;">
+                    <div class="label">Sudah Setor</div>
+                    <div class="value">${progAll.stages.setor.checked}</div>
+                    <div class="sub">${progAll.stages.setor.percent}%</div>
+                </div>
+                <div class="summary-card" style="border-left-color:#8e24aa;">
+                    <div class="label">Sudah Takrir</div>
+                    <div class="value">${progAll.stages.takrir.checked}</div>
+                    <div class="sub">${progAll.stages.takrir.percent}%</div>
+                </div>`;
+        }
+
+        function renderTasmiJuzCard() {
+            const el = document.getElementById('tasmiJuzCard');
+            const checked = isTasmiJuzChecked(selectedKelas, selectedJuz, selectedSiswa);
+            let allSetor = true, allTakrir = true;
+            surahList.forEach(s => {
+                if (!isStageChecked(selectedKelas, selectedJuz, selectedSiswa, s.key, 'setor'))  allSetor = false;
+                if (!isStageChecked(selectedKelas, selectedJuz, selectedSiswa, s.key, 'takrir')) allTakrir = false;
+            });
+            const canEnable = allSetor && allTakrir;
+            let hint = '';
+            if (!canEnable) {
+                const missingSetor  = surahList.filter(s => !isStageChecked(selectedKelas, selectedJuz, selectedSiswa, s.key, 'setor')).length;
+                const missingTakrir = surahList.filter(s => !isStageChecked(selectedKelas, selectedJuz, selectedSiswa, s.key, 'takrir')).length;
+                const parts = [];
+                if (missingSetor)  parts.push(`${missingSetor} surah belum Setor`);
+                if (missingTakrir) parts.push(`${missingTakrir} surah belum Takrir`);
+                hint = `Tidak dapat dicentang. Masih ada: ${parts.join(' & ')}.`;
+            } else {
+                hint = "Semua surah sudah Setor & Takrir. Tasmi' & Ikhtibar per Juz dapat dicentang.";
+            }
+            el.innerHTML = `
+                <div class="tasmi-juz-card">
+                    <div class="info-wrap">
+                        <div class="title">
+                            🎯 Tasmi' &amp; Ikhtibar — Juz ${selectedJuz}
+                            <span class="status-pill ${checked ? 'done' : 'not'}">${checked ? '✓ Sudah Lulus' : 'Belum'}</span>
+                        </div>
+                        <div class="desc">${hint}</div>
+                    </div>
+                    <label class="tasmi-toggle ${checked ? 'checked' : ''}" for="tasmiJuzCb">
+                        <input type="checkbox" id="tasmiJuzCb" class="cb-big"
+                               ${checked ? 'checked' : ''} ${!canEnable ? 'disabled' : ''}>
+                        <span class="txt">${checked ? "Tasmi' Lulus" : "Tandai Lulus Tasmi'"}</span>
+                    </label>
+                </div>`;
+            const cb = document.getElementById('tasmiJuzCb');
+            if (cb) cb.addEventListener('change', function() {
+                setTasmiJuzChecked(selectedKelas, selectedJuz, selectedSiswa, this.checked);
+                renderBanner(); renderSummary(); renderTasmiJuzCard(); renderProgressStages(); renderTable();
+            });
+        }
+
+        function renderProgressStages() {
+            const progAll = getProgressSiswaAllStages(selectedKelas, selectedJuz, selectedSiswa);
+            const el = document.getElementById('progressStages');
+            const stageMeta = {
+                setor:  { label: '📝 Setor', cls: 'setor' },
+                takrir: { label: '🔁 Takrir', cls: 'takrir' },
+                tasmi:  { label: "🎯 Tasmi' & Ikhtibar", cls: 'tasmi' }
+            };
+            let html = '';
+            STAGES.forEach(st => {
+                const p = progAll.stages[st.id];
+                const meta = stageMeta[st.id];
+                let extra = '';
+                if (st.id === 'tasmi') extra = ' <span style="font-weight:400; opacity:0.8;">(per Juz)</span>';
+                html += `<div class="stage-box ${meta.cls}">
+                    <div class="label">
+                        <span>${meta.label}${extra}</span>
+                        <span class="pct-val">${p.checked}/${p.total} (${p.percent}%)</span>
+                    </div>
+                    <div class="bar"><div class="fill" style="width:${p.percent}%;">${p.percent}%</div></div>
+                </div>`;
+            });
+            el.innerHTML = html;
+        }
+
+        function renderTable() {
+            const body = document.getElementById('setoranBody');
+            document.getElementById('tableBadge').textContent = `${surahList.length} surah/rentang`;
+            if (surahList.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" style="padding:24px; color:#7a8fa3; font-style:italic;">Tidak ada data surah untuk juz ini.</td></tr>`;
+                return;
+            }
+            const tasmiJuz = isTasmiJuzChecked(selectedKelas, selectedJuz, selectedSiswa);
+            let html = '';
+            surahList.forEach((s, idx) => {
+                const setor  = isStageChecked(selectedKelas, selectedJuz, selectedSiswa, s.key, 'setor');
+                const takrir = isStageChecked(selectedKelas, selectedJuz, selectedSiswa, s.key, 'takrir');
+                const disTakrir = !setor;
+                let status;
+                if (tasmiJuz && setor && takrir) status = getStatusInfo(true, true, true);
+                else if (setor && takrir)        status = getStatusInfo(true, true, false);
+                else if (setor)                  status = getStatusInfo(true, false, false);
+                else                             status = getStatusInfo(false, false, false);
+
+                html += `<tr data-key="${s.key}">
+                    <td class="col-no">${idx + 1}</td>
+                    <td class="col-surah">${s.nama}</td>
+                    <td><input type="checkbox" class="cb stage-setor" data-key="${s.key}" data-stage="setor" ${setor ? 'checked' : ''}></td>
+                    <td><input type="checkbox" class="cb stage-takrir" data-key="${s.key}" data-stage="takrir" ${takrir ? 'checked' : ''} ${disTakrir ? 'disabled' : ''}></td>
+                    <td class="col-status"><span class="status-text ${status.cls}"><span class="dot"></span>${status.text}</span></td>
+                </tr>`;
+            });
+            body.innerHTML = html;
+            body.querySelectorAll('input.cb').forEach(cb => {
+                cb.addEventListener('change', function() { handleCheckboxChange(this); });
+            });
+        }
+
+        function handleCheckboxChange(cb) {
+            const key = cb.dataset.key;
+            const stage = cb.dataset.stage;
+            const checked = cb.checked;
+            const row = cb.closest('tr');
+            setStageChecked(selectedKelas, selectedJuz, selectedSiswa, key, stage, checked);
+
+            if (!checked) {
+                if (stage === 'setor') {
+                    const cTakrir = row.querySelector('.stage-takrir');
+                    if (cTakrir.checked) {
+                        cTakrir.checked = false;
+                        setStageChecked(selectedKelas, selectedJuz, selectedSiswa, key, 'takrir', false);
+                    }
+                }
+                if (isTasmiJuzChecked(selectedKelas, selectedJuz, selectedSiswa)) {
+                    setTasmiJuzChecked(selectedKelas, selectedJuz, selectedSiswa, false);
+                }
+            }
+            updateRowEnableState(row);
+            updateRowStatus(row);
+            renderBanner(); renderSummary(); renderTasmiJuzCard(); renderProgressStages();
+            refreshAllRowStatuses();
+        }
+
+        function updateRowEnableState(row) {
+            const setor = row.querySelector('.stage-setor').checked;
+            row.querySelector('.stage-takrir').disabled = !setor;
+        }
+
+        function updateRowStatus(row) {
+            const setor  = row.querySelector('.stage-setor').checked;
+            const takrir = row.querySelector('.stage-takrir').checked;
+            const tasmiJuz = isTasmiJuzChecked(selectedKelas, selectedJuz, selectedSiswa);
+            let status;
+            if (tasmiJuz && setor && takrir) status = getStatusInfo(true, true, true);
+            else if (setor && takrir)        status = getStatusInfo(true, true, false);
+            else if (setor)                  status = getStatusInfo(true, false, false);
+            else                             status = getStatusInfo(false, false, false);
+            const el = row.querySelector('.status-text');
+            el.className = 'status-text ' + status.cls;
+            el.innerHTML = `<span class="dot"></span>${status.text}`;
+        }
+
+        function refreshAllRowStatuses() {
+            document.querySelectorAll('#setoranBody tr').forEach(row => updateRowStatus(row));
+        }
+
+        function initPage() {
+            surahList = surahData[selectedJuz] || [];
+            document.getElementById('pageTitle').textContent = `Kontrol Setoran — ${getKelasName(selectedKelas)}`;
+            document.getElementById('pageInfo').textContent = `Juz ${selectedJuz} • ${selectedSiswa} • ${surahList.length} surah`;
+            renderBanner(); renderSummary(); renderTasmiJuzCard(); renderProgressStages(); renderTable();
+        }
+
+        // Validasi: siswa harus ada di daftar dinamis (getSiswaList)
+        const daftarSiswa = (typeof getSiswaList === 'function') ? getSiswaList(selectedKelas) : [];
+        const siswaValid = selectedSiswa && daftarSiswa.includes(selectedSiswa);
+
+        if (!selectedKelas || !selectedJuz || !siswaValid || !surahData[selectedJuz]) {
+            document.getElementById('pageTitle').textContent = 'Error';
+            document.getElementById('pageInfo').textContent = '';
+            document.getElementById('siswaBanner').innerHTML = '';
+            document.getElementById('summaryCards').innerHTML = '';
+            document.getElementById('tasmiJuzCard').innerHTML = '';
+            document.querySelector('.progress-card').style.display = 'none';
+            document.querySelector('.table-card').innerHTML =
+                '<div class="empty-message">Parameter tidak valid atau siswa tidak ditemukan. Silakan kembali ke dashboard.</div>';
+        } else {
+            initPage();
+        }
+    </script>
+</body>
+</html>
